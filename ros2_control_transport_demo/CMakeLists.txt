@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.16)
 project(ros2_control_transport_demo LANGUAGES CXX)
 
 find_package(ament_cmake REQUIRED)
+find_package(can_transport REQUIRED)
 find_package(hardware_interface REQUIRED)
 find_package(pluginlib REQUIRED)
 find_package(rclcpp REQUIRED)
@@ -12,6 +13,7 @@ add_library(transport_demo SHARED
 )
 target_include_directories(transport_demo PRIVATE src)
 target_link_libraries(transport_demo
+  can_transport::can_transport
   hardware_interface::hardware_interface
   pluginlib::pluginlib
   rclcpp::rclcpp

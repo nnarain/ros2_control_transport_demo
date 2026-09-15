@@ -18,27 +18,17 @@
 #include <memory>
 #include <string>
 
+#include "can_transport/can_transport.hpp"
 #include "hardware_interface/actuator_interface.hpp"
 #include "hardware_interface/handle.hpp"
 #include "hardware_interface/hardware_info.hpp"
 #include "hardware_interface/types/hardware_interface_type_values.hpp"
 #include "pluginlib/class_list_macros.hpp"
-#include "rclcpp/logging.hpp"
-#include "can_transport/can_transport.hpp"
 
-namespace transport_demo
+namespace test_hardware_components
 {
 
-/**
- * @brief Demo CAN motor actuator consuming a shared CanTransport.
- *
- * Resolves its transport by name in on_init() via
- * HardwareComponentParams::transport_provider (the single downcast), registers a
- * frame callback for its arbitration ID, and in write() sends the velocity
- * command as a CAN frame. With the MockCanTransport the command loops back and
- * appears as the position state — no hardware required.
- */
-class TransportDemoActuator : public hardware_interface::ActuatorInterface
+class TestTransportConsumerActuator : public hardware_interface::ActuatorInterface
 {
 public:
   hardware_interface::CallbackReturn on_init(
@@ -51,44 +41,30 @@ public:
 
     if (!params.transport_provider)
     {
-      RCLCPP_ERROR(
-        get_logger(), "No transport provider available for component '%s'",
-        params.hardware_info.name.c_str());
+      RCLCPP_ERROR(get_logger(), "No transport provider available for component '%s'",
+                   params.hardware_info.name.c_str());
       return hardware_interface::CallbackReturn::ERROR;
     }
 
     const auto & hw_params = params.hardware_info.hardware_parameters;
-    if (hw_params.count("transport") == 0)
-    {
-      RCLCPP_ERROR(get_logger(), "Missing 'transport' parameter in <hardware> block");
-      return hardware_interface::CallbackReturn::ERROR;
-    }
-
-    RCLCPP_INFO(get_logger(), "Resolving transport '%s'", hw_params.at("transport").c_str());
     can_ = params.transport_provider->get_transport<can_transport::CanTransport>(
       hw_params.at("transport"));
     if (!can_)
     {
-      RCLCPP_ERROR(
-        get_logger(), "Transport '%s' not found or not a CanTransport",
-        hw_params.at("transport").c_str());
+      RCLCPP_ERROR(get_logger(), "Transport '%s' not found or not a CanTransport",
+                   hw_params.at("transport").c_str());
       return hardware_interface::CallbackReturn::ERROR;
     }
-
-    RCLCPP_INFO(get_logger(), "Transport '%s' successfully resolved", hw_params.at("transport").c_str());
 
     arb_id_ = static_cast<uint32_t>(std::stoul(hw_params.at("arbitration_id"), nullptr, 0));
     char key[16];
     std::snprintf(key, sizeof(key), "0x%X", arb_id_);
-    can_->register_frame_callback(key, [this](const can_transport::CanFrame & f) {
-      float v = 0.0f;
-      std::memcpy(&v, f.data, sizeof(v));
-      feedback_.store(static_cast<double>(v));
+    can_->register_frame_callback(key, [this](const can_transport::CanFrame & frame) {
+      float value = 0.0f;
+      std::memcpy(&value, frame.data, sizeof(value));
+      feedback_.store(static_cast<double>(value));
     });
 
-    RCLCPP_INFO(
-      get_logger(), "Component '%s' bound to transport '%s' on arb ID 0x%X",
-      params.hardware_info.name.c_str(), hw_params.at("transport").c_str(), arb_id_);
     return hardware_interface::CallbackReturn::SUCCESS;
   }
 
@@ -118,19 +94,15 @@ public:
   hardware_interface::return_type write(
     const rclcpp::Time &, const rclcpp::Duration &) override
   {
-    double v_cmd = 0.0;
-    std::ignore = velocity_command_interface_->get_value(v_cmd, true);
+    double command = 0.0;
+    std::ignore = velocity_command_interface_->get_value(command, true);
     can_transport::CanFrame frame;
     frame.id = arb_id_;
     frame.dlc = sizeof(float);
-    const float v = static_cast<float>(v_cmd);
-    std::memcpy(frame.data, &v, sizeof(v));
-    if (!can_->send(frame, false))
-    {
-      RCLCPP_ERROR(get_logger(), "Failed to send frame on arb ID 0x%X", arb_id_);
-      return hardware_interface::return_type::ERROR;
-    }
-    return hardware_interface::return_type::OK;
+    const float value = static_cast<float>(command);
+    std::memcpy(frame.data, &value, sizeof(value));
+    return can_->send(frame, false) ? hardware_interface::return_type::OK
+                                    : hardware_interface::return_type::ERROR;
   }
 
 private:
@@ -141,7 +113,7 @@ private:
   hardware_interface::CommandInterface::SharedPtr velocity_command_interface_;
 };
 
-}  // namespace transport_demo
+}  // namespace test_hardware_components
 
 PLUGINLIB_EXPORT_CLASS(
-  transport_demo::TransportDemoActuator, hardware_interface::ActuatorInterface)
+  test_hardware_components::TestTransportConsumerActuator, hardware_interface::ActuatorInterface)

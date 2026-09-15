@@ -1,0 +1,9 @@
+<library path="test_hardware_components">
+  <class name="test_hardware_components/TestTransportConsumerActuator"
+         type="test_hardware_components::TestTransportConsumerActuator"
+         base_class_type="hardware_interface::ActuatorInterface">
+    <description>
+      Test actuator that consumes a shared CAN transport resolved by name via transport_provider
+    </description>
+  </class>
+</library>
