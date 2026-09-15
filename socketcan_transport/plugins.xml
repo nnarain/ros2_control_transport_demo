@@ -1,0 +1,7 @@
+<library path="socketcan_transport">
+  <class name="socketcan_transport/SocketCanTransport"
+         type="socketcan_transport::SocketCanTransport"
+         base_class_type="transport_interface::TransportInterface">
+    <description>SocketCAN transport: receive thread + frame callbacks + send(). Async.</description>
+  </class>
+</library>

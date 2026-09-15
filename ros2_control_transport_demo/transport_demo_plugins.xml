@@ -1,0 +1,7 @@
+<library path="transport_demo">
+  <class name="ros2_control_transport_demo/TransportDemoActuator"
+         type="transport_demo::TransportDemoActuator"
+         base_class_type="hardware_interface::ActuatorInterface">
+    <description>Demo CAN motor actuator consuming a shared CanTransport by name</description>
+  </class>
+</library>
