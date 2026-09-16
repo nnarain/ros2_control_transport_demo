@@ -18,14 +18,11 @@
   </joint>
 
   <!-- ============================================================
-       ONE transport declaration for the whole bus — shared by all
-       consumers below. Switch the plugin to swap the bus backend:
-         - transport_interface/MockCanTransport   (no hardware, loopback)
-         - socketcan_transport/SocketCanTransport (real CAN, needs can0)
+       Define a transport for the CAN bus.
        ============================================================ -->
   <ros2_control name="can0" type="transport">
-    <plugin>transport_interface/MockCanTransport</plugin>
-    <param name="loopback">true</param>
+    <plugin>socketcan_transport/SocketCanTransport</plugin>
+    <param name="interface">vcan0</param>
   </ros2_control>
 
   <!-- ============================================================

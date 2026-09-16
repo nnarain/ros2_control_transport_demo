@@ -23,7 +23,7 @@ target_link_libraries(socketcan_transport PUBLIC
   transport_interface::transport_interface
 )
 
-pluginlib_export_plugin_description_file(socketcan_transport plugins.xml)
+pluginlib_export_plugin_description_file(transport_interface plugins.xml)
 
 install(
   DIRECTORY include/

@@ -2,6 +2,6 @@
   <class name="can_transport/MockCanTransport"
          type="can_transport::MockCanTransport"
          base_class_type="transport_interface::TransportInterface">
-    <description>In-memory loopback CAN transport for tests and demos</description>
+    <description>mock can transport plugin</description>
   </class>
 </library>

@@ -17,6 +17,7 @@
   <depend>robot_state_publisher</depend>
   <depend>joint_state_broadcaster</depend>
   <depend>transport_interface</depend>
+  <depend>position_controllers</depend>
 
   <exec_depend>launch</exec_depend>
   <exec_depend>launch_ros</exec_depend>
