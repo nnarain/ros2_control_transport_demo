@@ -48,6 +48,27 @@ Basically you can define a `transport` using a ros2_control tag in the URDF. The
 
 ```
 
+The demo uses the above, I think something like this might be better:
+
+```xml
+  <ros2_control name="can0" type="transport">
+    <plugin>socketcan_transport/SocketCanTransport</plugin>
+    <param name="interface">vcan0</param>
+  </ros2_control>
+
+  <ros2_control name="left_motor" type="actuator">
+    <hardware>
+      <plugin>ros2_control_transport_demo/TransportDemoActuator</plugin>
+      <param name="transport">can0</param>
+      <param name="arbitration_id">0x201</param>
+    </hardware>
+    <transport name="can0" />
+    ...
+  </ros2_control>
+```
+
+Using a `transport` block in the hardware component definition as a way of explicitly declaring the transports that the hardware plugin uses.
+
 ## Ok, but why?
 
 * Testability - The hardware component can be decouple from the hardware bus making it testable in CI
